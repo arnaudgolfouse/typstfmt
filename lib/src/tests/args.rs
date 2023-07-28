@@ -1,4 +1,5 @@
-use super::*;
+use super::make_test;
+use crate::Config;
 
 make_test!(call_func_empty, "#f()");
 make_test!(call_func_simple, "#f(1,2,3)");
@@ -42,7 +43,7 @@ make_test!(
 make_test!(args_comment_end, ARGS_COMMENT_END);
 
 make_test!(parenth_comment_end, "#(\ntrue// comment\n)");
-make_test!(func_comment_end, "#f(\ntrue// comment\n)",);
+make_test!(func_comment_end, "#f(\ntrue// comment\n)");
 
 const ARGS_COMMENT_END: &str = "#func(
     ..v_or_hline,

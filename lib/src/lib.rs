@@ -1,15 +1,15 @@
 #![doc = include_str!("../../README.md")]
 #![warn(clippy::all)]
 
-use itertools::Itertools;
-use tracing::debug;
-use tracing::instrument;
-use tracing::warn;
-use typst_syntax::ast::BinOp;
-use typst_syntax::SyntaxKind;
-use typst_syntax::SyntaxKind::*;
-use typst_syntax::{parse, LinkedNode};
-use Option::None;
+use itertools::Itertools as _;
+use tracing::{debug, instrument, warn};
+use typst_syntax::{
+    parse, LinkedNode,
+    SyntaxKind::{
+        Args, Array, Binary, BlockComment, CodeBlock, Colon, ContentBlock, Destructuring, Dict, Eq,
+        Keyed, LetBinding, LineComment, Named, Params, Parenthesized, Raw, Set, Show, Space,
+    },
+};
 
 mod config;
 pub use config::Config;

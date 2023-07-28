@@ -1,4 +1,6 @@
-use super::*;
+use super::make_test;
+use crate::Config;
+
 make_test!(empty, "#{}");
 make_test!(empty_two, "#{ }");
 make_test!(empty_three, "#{  }");

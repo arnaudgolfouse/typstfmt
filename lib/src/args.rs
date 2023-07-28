@@ -1,6 +1,15 @@
-use crate::utils::{get_next_ignoring, next_is_ignoring};
-
-use super::*;
+use crate::{
+    utils::{self, get_next_ignoring, next_is_ignoring},
+    Ctx,
+};
+use tracing::instrument;
+use typst_syntax::{
+    LinkedNode,
+    SyntaxKind::{
+        Array, BlockComment, Comma, LeftParen, LineComment, Markup, Parbreak, Parenthesized,
+        RightParen, Space,
+    },
+};
 
 #[instrument(skip_all)]
 /// format args using [format_args_tight] or [format_args_breaking] depending on the context.
@@ -61,7 +70,7 @@ pub(crate) fn format_args_tight(
         match node.kind() {
             Space => {}
             Comma => {
-                if utils::next_is_ignoring(&node, RightParen, &[Space]) {
+                if next_is_ignoring(&node, RightParen, &[Space]) {
                     // not putting the comma in would result in a parenthesized expression, not an array
                     // "(a,) != (a)"
                     if node.parent_kind() == Some(Array) {
@@ -93,8 +102,7 @@ pub(crate) fn format_args_breaking(
     let mut consecutive_items = 0;
 
     for (s, node) in children.iter().zip(parent.children()) {
-        let is_last =
-            utils::next_is_ignoring(&node, RightParen, &[Space, LineComment, BlockComment]);
+        let is_last = next_is_ignoring(&node, RightParen, &[Space, LineComment, BlockComment]);
         match node.kind() {
             LeftParen => {
                 res.push_str(s);
@@ -147,7 +155,7 @@ pub(crate) fn format_args_breaking(
                 missing_trailing = false;
                 let is_last_comma = utils::find_next(&node, &|x| x.kind() == Comma).is_none();
                 let is_trailing =
-                    utils::next_is_ignoring(&node, RightParen, &[Space, LineComment, BlockComment]);
+                    next_is_ignoring(&node, RightParen, &[Space, LineComment, BlockComment]);
 
                 if is_last_comma && is_trailing {
                     // no indent

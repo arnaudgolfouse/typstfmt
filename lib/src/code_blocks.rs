@@ -1,5 +1,14 @@
-use super::*;
-use crate::utils::{get_next_ignoring, next_is_ignoring};
+use crate::{
+    utils::{self, get_next_ignoring, next_is_ignoring},
+    Ctx,
+};
+use tracing::{debug, instrument};
+use typst_syntax::{
+    LinkedNode,
+    SyntaxKind::{
+        BlockComment, Code, ForLoop, LeftBrace, LineComment, RightBrace, Space, WhileLoop,
+    },
+};
 
 #[instrument(skip_all)]
 /// format code blocks using [format_code_blocks_breaking] or [format_code_blocks_tight]
@@ -90,7 +99,7 @@ pub(crate) fn format_code_blocks_breaking(
                     || utils::prev_is_ignoring(&node, BlockComment, &[Space])
                 {
                     ctx.push_raw_in(s, &mut res);
-                    if !utils::next_is_ignoring(&node, RightBrace, &[Space]) {
+                    if !next_is_ignoring(&node, RightBrace, &[Space]) {
                         ctx.push_in("\n", &mut res);
                         ctx.consec_new_line = 2;
                     }
@@ -106,7 +115,7 @@ pub(crate) fn format_code_blocks_breaking(
                             res.push_str(&ctx.get_indent());
                             res.push_str(s.trim_start());
 
-                            if !utils::next_is_ignoring(&node, RightBrace, &[Space]) {
+                            if !next_is_ignoring(&node, RightBrace, &[Space]) {
                                 ctx.push_in("\n", &mut res);
                                 ctx.consec_new_line = 2;
                                 ctx.just_spaced = true;
@@ -115,7 +124,7 @@ pub(crate) fn format_code_blocks_breaking(
                         _ => {
                             res.push(' ');
                             res.push_str(s);
-                            if !utils::next_is_ignoring(&node, RightBrace, &[Space]) {
+                            if !next_is_ignoring(&node, RightBrace, &[Space]) {
                                 ctx.push_in("\n", &mut res);
                                 ctx.consec_new_line = 2;
                             }

@@ -1,4 +1,5 @@
-use super::*;
+use super::make_test;
+use crate::Config;
 
 make_test!(code_func, "#{f(1,2,3)}");
 make_test!(
@@ -7,7 +8,7 @@ make_test!(
     Config {
         max_line_length: 2,
         ..Default::default()
-    },
+    }
 );
 make_test!(
     code_func_break_nested,
@@ -15,12 +16,12 @@ make_test!(
     Config {
         max_line_length: 2,
         ..Default::default()
-    },
+    }
 );
 make_test!(while_loop, WHILE_LOOP);
 make_test!(for_loop, FOR_LOOP);
 make_test!(official, OFFICIAL);
-make_test!(let_closure_params_named, TABLEX,);
+make_test!(let_closure_params_named, TABLEX);
 make_test!(raw_text, RAW);
 
 const FOR_LOOP: &str = r#"#for k in range(5) {

@@ -1,4 +1,6 @@
-use super::*;
+use itertools::Itertools as _;
+use tracing::{debug, instrument};
+use typst_syntax::{LinkedNode, SyntaxKind};
 use unicode_segmentation::UnicodeSegmentation;
 
 /// like next sibling but doesn't skip trivia.

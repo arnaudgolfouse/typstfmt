@@ -1,7 +1,11 @@
-use super::*;
-use paste::paste;
-use tracing::Level;
+use itertools::Itertools as _;
+use tracing::{debug, instrument, Level};
 use tracing_subscriber::FmtSubscriber;
+use typst_syntax::{
+    parse, LinkedNode,
+    SyntaxKind::{Comma, Parbreak, Space},
+};
+
 /// Enables logging.
 ///
 /// Reads different environment variable.
@@ -41,17 +45,40 @@ fn init() {
 /// TODO : currently for the AST test, all Space and parbeak are skipped, maybe there is a better way.
 /// TODO : AST check when we had a trailing comma, find a way to allow it to be able to run test for these snippets too.
 macro_rules! make_test {
-    ($test_name:ident, $input:expr $(,)?) => {
-        make_test!($test_name, $input, Config::default());
+    ($test_name:ident, $input:expr) => {
+        $crate::tests::make_test!($test_name, $input, $crate::Config::default());
     };
-    ($test_name:ident, $input:expr, $config:expr $(,)?) => {
-        paste! {
+    //temporary hack
+    ($test_name:ident, $input:expr, $config:expr, ignore_ast) => {
+        paste::paste! {
             #[test]
             fn [<$test_name _snapshot>]()  {
-                init();
+                $crate::tests::init();
                 let input = $input;
-                let formatted = format(input, $config);
-                println!("AST: {:?}",parse(input));
+                let formatted = $crate::format(input, $config);
+                println!("{:?}", typst_syntax::parse(input));
+                insta::with_settings!({description => format!("INPUT\n===\n{input:?}\n===\n{input}\n===\nFORMATTED\n===\n{formatted}")}, {
+                    insta::assert_debug_snapshot!(formatted);
+                });
+            }
+
+            #[test]
+            fn [<$test_name _double_format>]()  {
+                let input = $input;
+                let format_once = $crate::format(input, $config);
+                let format_twice = $crate::format(&format_once, $config);
+                similar_asserts::assert_eq!(format_once, format_twice);
+            }
+        }
+    };
+    ($test_name:ident, $input:expr, $config:expr) => {
+        paste::paste! {
+            #[test]
+            fn [<$test_name _snapshot>]()  {
+                $crate::tests::init();
+                let input = $input;
+                let formatted = $crate::format(input, $config);
+                println!("AST: {:?}", typst_syntax::parse(input));
                 insta::with_settings!({description => format!("INPUT\n===\n{input:?}\n===\n{input}\n===\nFORMATTED\n===\n{formatted}")}, {
                     insta::assert_debug_snapshot!(formatted);
                 });
@@ -59,23 +86,24 @@ macro_rules! make_test {
 
             #[test]
             fn [<$test_name _ast>]() {
-                init();
+                $crate::tests::init();
                 let input = $input;
-                let formatted = format(input, $config);
-                assert!(tests::parses_the_same(&input, &formatted));
+                let formatted = $crate::format(input, $config);
+                assert!($crate::tests::parses_the_same(&input, &formatted));
             }
 
             #[test]
             fn [<$test_name _double_format>]()  {
-                init();
+                $crate::tests::init();
                 let input = $input;
-                let format_once = format(input, $config);
-                let format_twice = format(&format_once, $config);
+                let format_once = $crate::format(input, $config);
+                let format_twice = $crate::format(&format_once, $config);
                 similar_asserts::assert_eq!(format_once, format_twice);
             }
         }
     };
 }
+use make_test;
 
 fn tree_are_equal(node: &LinkedNode, other_node: &LinkedNode) -> bool {
     let should_ignore = |x: &LinkedNode| [Space, Parbreak, Comma].contains(&x.kind());

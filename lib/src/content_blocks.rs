@@ -1,4 +1,9 @@
-use super::*;
+use crate::Ctx;
+use tracing::instrument;
+use typst_syntax::{
+    LinkedNode,
+    SyntaxKind::{LeftBracket, Markup, RightBracket, Space},
+};
 
 #[instrument(skip_all)]
 pub(crate) fn format_content_blocks(

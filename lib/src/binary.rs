@@ -1,4 +1,10 @@
-use super::*;
+use crate::Ctx;
+use tracing::instrument;
+use typst_syntax::{
+    ast::BinOp,
+    LinkedNode,
+    SyntaxKind::{BlockComment, LineComment, Not, Parenthesized, Space},
+};
 
 /// only format tight cause it would not be supported to format breaking in code blocks
 ///

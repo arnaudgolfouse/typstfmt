@@ -1,10 +1,10 @@
-use super::*;
+use super::make_test;
 
 make_test!(param_comment, PARAMS_COMMENT);
-make_test!(many_comments, TABLEX_COMMENTS,);
-make_test!(parenth_comment, PARENTH_COMMENT,);
-make_test!(array_2comment, ARRAY_2COMMENT,);
-make_test!(array_end_comment, ARRAY_END_COMMENT,);
+make_test!(many_comments, TABLEX_COMMENTS);
+make_test!(parenth_comment, PARENTH_COMMENT);
+make_test!(array_2comment, ARRAY_2COMMENT);
+make_test!(array_end_comment, ARRAY_END_COMMENT);
 make_test!(block_comment, BLOCK_COMMENT);
 make_test!(block_comment_nested, BLOCK_COMMENT_NESTED);
 make_test!(code_comment, CODE_COMMENT);

@@ -1,4 +1,5 @@
-use super::*;
+use super::make_test;
+
 make_test!(unchanged, " ");
 make_test!(one_space, "  ");
 make_test!(one_space_b, "   ");
