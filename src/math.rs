@@ -1,3 +1,5 @@
+use unicode_width::UnicodeWidthStr;
+
 use super::*;
 use crate::context::Ctx;
 use crate::format_comment_handling_disable;
@@ -82,7 +84,7 @@ pub(crate) fn format_math(parent: &LinkedNode, children: &[String], ctx: &mut Ct
                     &mut res,
                 );
                 ctx.push_raw_in(s, &mut res);
-                position = align_columns[index] + s.chars().count();
+                position = align_columns[index] + UnicodeWidthStr::width(s.as_str());
                 index += 1;
 
                 first_align = false;
@@ -97,7 +99,7 @@ pub(crate) fn format_math(parent: &LinkedNode, children: &[String], ctx: &mut Ct
                 ctx.push_raw_in(" ", &mut res);
             }
             _ => {
-                position += s.chars().count();
+                position += UnicodeWidthStr::width(s.as_str());
                 ctx.push_raw_in(s, &mut res)
             }
         }
@@ -142,7 +144,7 @@ fn retrieve_align_columns(parent: &LinkedNode, children: &[String]) -> Vec<usize
                 position += 1;
             }
             _ => {
-                position += s.chars().count();
+                position += UnicodeWidthStr::width(s.as_str());
             }
         }
     }
