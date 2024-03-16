@@ -117,9 +117,9 @@ dependencies = [
 
 [[package]]
 name = "ecow"
-version = "0.2.0"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e6ea5e3f9cda726431da9d1a8d5a29785d544b31e98e1ca7a210906244002e02"
+checksum = "dba31a30727c42ff5e60468d695c7f21e43a6db2808b7195adcab908fbd9f794"
 dependencies = [
  "serde",
 ]
@@ -605,6 +605,7 @@ name = "typstfmt"
 version = "0.2.9"
 dependencies = [
  "confy",
+ "ecow",
  "globmatch",
  "insta",
  "itertools",

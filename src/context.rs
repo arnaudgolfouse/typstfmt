@@ -70,7 +70,7 @@ impl Ctx {
                 self.push_raw_in(s, result);
                 continue;
             }
-            let s = if s.ends_with("\n") {
+            let s = if s.ends_with('\n') {
                 format!("{}\n", s.trim_end())
             } else {
                 s.to_string()

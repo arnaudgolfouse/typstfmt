@@ -32,6 +32,8 @@ mod markup;
 mod math;
 mod params;
 
+mod pretty_print;
+
 #[must_use]
 pub fn format(s: &str, config: Config) -> String {
     //replace tabs
