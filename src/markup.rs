@@ -1,5 +1,6 @@
+use self::pretty_print::Format;
 use super::*;
-use typst_syntax::ast::AstNode;
+use typst_syntax::{ast::AstNode, SyntaxNode};
 
 #[instrument(skip_all)]
 pub(crate) fn format_content_blocks(
@@ -41,6 +42,20 @@ pub(crate) fn format_content_blocks(
         }
     }
     res
+}
+
+pub(crate) fn format_markup_bis(node: &SyntaxNode, ctx: &mut Ctx) -> Option<Format> {
+    let just_spaced = ctx.just_spaced;
+    let mut children = node
+        .children()
+        .filter_map(|c| visit_bis(c, ctx, false))
+        .skip_while(|f| just_spaced && f.is_space());
+    let mut result = children.next()?;
+    // Remark: no line breaking here... maybe there should be.
+    for c in children {
+        result &= c;
+    }
+    Some(result)
 }
 
 // break lines so they won't go over max_line_length

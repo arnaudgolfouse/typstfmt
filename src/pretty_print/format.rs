@@ -22,12 +22,14 @@ pub(super) enum FormatInner {
     Indent(Rc<Format>),
     /// See [`Format::flat`]
     Flat(Rc<Format>),
+    /// See [`Format::unflat`]
+    UnFlat(Rc<Format>),
     /// Concatenation of two formats, will be printed side-by-side.
     Concat(Rc<Format>, Rc<Format>),
     /// Choice between two formats, only one will be printed.
     Choice(Rc<Format>, Rc<Format>),
 
-    /// See [`Format::raw`]
+    /// See [`Format::raw_block`]
     RawBlock(EcoString),
 }
 
@@ -40,17 +42,45 @@ impl Format {
     }
 
     /// A newline. It **will** appear in the final document.
+    ///
+    /// # Tips
+    ///
+    /// Take care that newline elements are always inserted on the right-hand of a choice.
+    // FIXME: there need to be a way to say "this format contains newlines unconditionnaly, and thus its parent(s) should not be flat."
     pub(crate) fn newline() -> Self {
         Self(FormatInner::Newline)
     }
 
+    /// Returns `true` if the format recursively contains a [`newline`](Self::newline).
+    ///
+    /// Text containing the newline character `\n` is **also** considered.
+    ///
+    /// When encountering a choice, the format contains a newline if *both* choices contain a newline.
+    pub(crate) fn has_newline(&self) -> bool {
+        match &self.0 {
+            FormatInner::Newline => true,
+            FormatInner::Space => false,
+            FormatInner::Text(s, _) | FormatInner::RawBlock(s) => s.contains('\n'),
+            FormatInner::Indent(f) | FormatInner::Flat(f) | FormatInner::UnFlat(f) => {
+                f.has_newline()
+            }
+            FormatInner::Concat(f1, f2) => f1.has_newline() || f2.has_newline(),
+            FormatInner::Choice(f1, f2) => f1.has_newline() && f2.has_newline(),
+        }
+    }
+
     /// A single space.
     pub(crate) fn space() -> Self {
-        Self(FormatInner::Newline)
+        Self(FormatInner::Space)
+    }
+
+    /// Returns `true` if `self` is a single space, created with [`Self::space`].
+    pub(crate) fn is_space(&self) -> bool {
+        matches!(self.0, FormatInner::Space)
     }
 
     /// The format used for raw blocks, so that we correctly handle indentation.
-    pub(crate) fn raw(string: EcoString) -> Self {
+    pub(crate) fn raw_block(string: EcoString) -> Self {
         Self(FormatInner::RawBlock(string))
     }
 
@@ -64,6 +94,13 @@ impl Format {
     /// 'Flatten' the given format. That is, always make the left-most choice.
     pub(crate) fn flat(self) -> Self {
         Self(FormatInner::Flat(Rc::new(self)))
+    }
+
+    /// 'Unflatten' the given format.
+    ///
+    /// This forces this format's parent to use their right-most option.
+    pub(crate) fn unflat(self) -> Self {
+        Self(FormatInner::UnFlat(Rc::new(self)))
     }
 }
 
@@ -93,5 +130,18 @@ impl BitOr for Format {
     /// format. Otherwise, display the right format.
     fn bitor(self, other: Self) -> Self {
         Self(FormatInner::Choice(Rc::new(self), Rc::new(other)))
+    }
+}
+
+impl FromIterator<Format> for Option<Format> {
+    fn from_iter<T: IntoIterator<Item = Format>>(iter: T) -> Self {
+        let mut result: Option<Format> = None;
+        for f in iter {
+            result = Some(match result {
+                Some(r) => r & f,
+                None => f,
+            });
+        }
+        result
     }
 }

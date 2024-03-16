@@ -131,6 +131,7 @@ impl<'a> PrettyPrinterInner<'a> {
                     }
                 }
                 FormatInner::Flat(f) => stack.push(chunk.with_format(f).flat()),
+                FormatInner::UnFlat(_) => return false,
                 FormatInner::Indent(f) => stack.push(chunk.with_format(f).indent()),
                 FormatInner::Concat(f1, f2) => {
                     stack.push(chunk.with_format(f2));
@@ -175,17 +176,18 @@ impl<'a> Display for PrettyPrinter<'a> {
                         // FIXME: add custom indentation
                         f.write_str("  ")?;
                     }
-                    printer.col = chunk.indent;
+                    printer.col = 2 * chunk.indent;
                 }
                 FormatInner::Space => {
                     f.write_str(" ")?;
                     printer.col += 1;
                 }
                 FormatInner::Flat(f) => printer.chunks.push(chunk.with_format(f).flat()),
+                FormatInner::UnFlat(f) => printer.chunks.push(chunk.with_format(f)),
                 FormatInner::Indent(f) => printer.chunks.push(chunk.with_format(f).indent()),
                 FormatInner::Concat(f1, f2) => {
-                    printer.chunks.push(chunk.with_format(f1));
                     printer.chunks.push(chunk.with_format(f2));
+                    printer.chunks.push(chunk.with_format(f1));
                 }
                 FormatInner::Choice(f1, f2) => {
                     if chunk.flat || printer.fits(chunk.with_format(f1)) {
@@ -231,7 +233,7 @@ impl<'a> Display for PrettyPrinter<'a> {
                             f.write_str(line)?;
                         }
                     }
-                    printer.col = chunk.indent + 3;
+                    printer.col = 2 * chunk.indent + 3;
                 }
             }
         }
